@@ -138,7 +138,7 @@ before_test:
 
 test_script:
   - cmd: cd "C:\projects\pytango"
-  - "%PYTHON_ROOT%python.exe run setup.py test"
+  - "%PYTHON_ROOT%python.exe setup.py test"
 
 after_test:
   - cmd: cd C:/projects/pytango/dist
