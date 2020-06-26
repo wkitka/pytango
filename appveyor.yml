@@ -84,8 +84,9 @@ init:
   - cmd: cd "C:\projects\"
   - appveyor DownloadFile %boost_download_base%/%boost_version%/boost-python-%boost_version%_%ARCH%_py%PYTHON_VER%.zip
   - cmd: 7z -y x boost-python-%boost_version%_%ARCH%_py%PYTHON_VER%.zip -oC:\projects\
-  - cmd: cd "C:\projects\"
+  - cmd: cd "C:\projects\Boost\"
   - cmd: dir
+  - cmd: echo BOOST_ROOT is '%BOOST_ROOT%'
 
   #Pthread-Win32
   - cmd: cd "C:\projects\"
