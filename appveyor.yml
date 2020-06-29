@@ -1,4 +1,4 @@
-version: 9.3.1.{build}
+version: 9.3.3.dev0.{build}
 
 image: Visual Studio 2015
 
@@ -8,53 +8,53 @@ environment:
   boost_download_base: https://github.com/tango-controls/boost-ci/releases/download/
   boost_version: 1.70.0
   matrix:
-    - platform: win32
-      configuration: Release
-      ARCH: win32-msvc9
-      ARCH_PY: win32-msvc9-py27
-      VC_VER: 9.0
-      MSVCVERSION: v90
-      PYTHON_VER: 27
-      PYTHON_ROOT: c:\Python27\
-      CMAKE_GENERATOR: "Visual Studio 9 2008"
-    - platform: x64
-      configuration: Release
-      ARCH: x64-msvc9
-      ARCH_PY: x64-msvc9-py27
-      VC_VER: 9.0
-      MSVCVERSION: v90
-      PYTHON_VER: 27
-      PYTHON_ROOT: c:\Python27-x64\
-      CMAKE_GENERATOR: "Visual Studio 9 2008 Win64"
-
-    - platform: win32
-      configuration: Release
-      ARCH: win32-msvc14
-      ARCH_PY: win32-msvc14-py36
-      VC_VER: 14.0
-      MSVCVERSION: v140
-      PYTHON_VER: 36
-      PYTHON_ROOT: c:\Python36\
-      CMAKE_GENERATOR: "Visual Studio 14 2015"
-    - platform: x64
-      configuration: Release
-      ARCH: x64-msvc14
-      ARCH_PY: x64-msvc14-py36
-      VC_VER: 14.0
-      MSVCVERSION: v140
-      PYTHON_VER: 36
-      PYTHON_ROOT: c:\Python36-x64\
-      CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
-
-    - platform: win32
-      configuration: Release
-      ARCH: win32-msvc14
-      ARCH_PY: win32-msvc14-py37
-      VC_VER: 14.0
-      MSVCVERSION: v140
-      PYTHON_VER: 37
-      PYTHON_ROOT: c:\Python37\
-      CMAKE_GENERATOR: "Visual Studio 14 2015"
+#    - platform: win32
+#      configuration: Release
+#      ARCH: win32-msvc9
+#      ARCH_PY: win32-msvc9-py27
+#      VC_VER: 9.0
+#      MSVCVERSION: v90
+#      PYTHON_VER: 27
+#      PYTHON_ROOT: c:\Python27\
+#      CMAKE_GENERATOR: "Visual Studio 9 2008"
+#    - platform: x64
+#      configuration: Release
+#      ARCH: x64-msvc9
+#      ARCH_PY: x64-msvc9-py27
+#      VC_VER: 9.0
+#      MSVCVERSION: v90
+#      PYTHON_VER: 27
+#      PYTHON_ROOT: c:\Python27-x64\
+#      CMAKE_GENERATOR: "Visual Studio 9 2008 Win64"
+#
+#    - platform: win32
+#      configuration: Release
+#      ARCH: win32-msvc14
+#      ARCH_PY: win32-msvc14-py36
+#      VC_VER: 14.0
+#      MSVCVERSION: v140
+#      PYTHON_VER: 36
+#      PYTHON_ROOT: c:\Python36\
+#      CMAKE_GENERATOR: "Visual Studio 14 2015"
+#    - platform: x64
+#      configuration: Release
+#      ARCH: x64-msvc14
+#      ARCH_PY: x64-msvc14-py36
+#      VC_VER: 14.0
+#      MSVCVERSION: v140
+#      PYTHON_VER: 36
+#      PYTHON_ROOT: c:\Python36-x64\
+#      CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
+#
+#    - platform: win32
+#      configuration: Release
+#      ARCH: win32-msvc14
+#      ARCH_PY: win32-msvc14-py37
+#      VC_VER: 14.0
+#      MSVCVERSION: v140
+#      PYTHON_VER: 37
+#      PYTHON_ROOT: c:\Python37\
+#      CMAKE_GENERATOR: "Visual Studio 14 2015"
     - platform: x64
       configuration: Release
       ARCH: x64-msvc14
@@ -85,6 +85,13 @@ init:
   - appveyor DownloadFile %boost_download_base%/%boost_version%/boost-python-%boost_version%_%ARCH%_py%PYTHON_VER%.zip
   - cmd: 7z -y x boost-python-%boost_version%_%ARCH%_py%PYTHON_VER%.zip -oC:\projects\
 
+  #Pthread-Win32
+  - cmd: cd "C:\projects\"
+  - cmd: md pthreads-win32
+  - cmd: cd "C:\projects\"
+  - appveyor DownloadFile https://github.com/tango-controls/Pthread_WIN32/releases/download/2.9.1/pthreads-win32-2.9.1_%ARCH%.zip
+  - cmd: 7z -y x pthreads-win32-2.9.1_%ARCH%.zip -oC:\projects\pthreads-win32\
+
   #VS2008 patch
   - cmd: cd "C:\projects\"
   - cmd: appveyor DownloadFile https://github.com/menpo/condaci/raw/master/vs2008_patch.zip
@@ -107,6 +114,7 @@ install:
   # Prepare cmake
   - cmd: cd "C:\projects\pytango"
   - cmd: set BOOST_ROOT=c:/projects/Boost
+  - cmd: set PTHREAD_WIN=C:/projects/pthreads-win32/
   - cmd: if /I %platform%==win32 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x86
   - cmd: if /I %platform%==x64 set TANGO_ROOT=C:/projects/libtango/libtango_%cpptango_version%_%MSVCVERSION%_x64
   - cmd: echo TANGO_ROOT is "%TANGO_ROOT%"
@@ -124,8 +132,20 @@ build_script:
   - cmd: cd C:/projects/pytango
   - cmake --build ./ -j 4 --config Release
 
+before_test:
+  - cmd: cd "C:\projects\pytango"
+  - "%PYTHON_ROOT%/Scripts/pip.exe install -r test_requirements.txt"
 
-after_build:
+test_script:
+  - cmd: set PYTHONPATH=%PYTHON_ROOT%
+  - cmd: echo PYTHONPATH is '%PYTHONPATH%'
+  - cmd: cd "C:\projects\pytango\dist"
+  - "%PYTHON_ROOT%/Scripts/pip.exe install --find-links=C:/projects/pytango/dist pytango"
+  - cmd: cd "%PYTHON_ROOT%/Scripts"
+  - cmd: cd "C:\projects\pytango"
+  - "%PYTHON_ROOT%/Scripts/pytest.exe tests"
+
+after_test:
   - cmd: cd C:/projects/pytango/dist
   - cmd: dir
   - cmd: cd C:/projects/pytango
