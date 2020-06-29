@@ -139,6 +139,7 @@ before_test:
 test_script:
   - cmd: set PYTHONPATH=%PYTHON_ROOT%
   - cmd: cd "C:\projects\pytango"
+  - "%PYTHON_ROOT%python.exe setup.py build"
   - "%PYTHON_ROOT%python.exe setup.py test"
 
 after_test:
