@@ -1,0 +1,10 @@
+pytest-runner
+pytest-xdist
+gevent != 1.5a1
+psutil
+trollius ; python_version == '2.7'
+futures ; python_version == '2.7'
+pyparsing < 3 ; python_version == '2.7'
+pytest < 5 ; python_version == '2.7'
+zipp >= 0.5, < 2 ; python_version == '2.7'
+pytest ; python_version > '3.5'
