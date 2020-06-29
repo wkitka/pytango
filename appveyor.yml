@@ -133,6 +133,7 @@ build_script:
   - cmake --build ./ -j 4 --config Release
 
 before_test:
+  - cmd: set PYTHONPATH=%PYTHON_ROOT%
   - cmd: cd "C:\projects\pytango"
   - "%PYTHON_ROOT%/Scripts/pip.exe install -r test_requirements.txt"
 
