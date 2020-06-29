@@ -138,6 +138,7 @@ before_test:
 
 test_script:
   - cmd: set PYTHONPATH=%PYTHON_ROOT%
+  - cmd: echo PYTHONPATH is '%PYTHONPATH%'
   - cmd: cd "C:\projects\pytango\dist"
   - "%PYTHON_ROOT%/Scripts/pip.exe install pytango*.whl"
     - cmd: cd "C:\projects\pytango"
