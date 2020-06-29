@@ -138,9 +138,10 @@ before_test:
 
 test_script:
   - cmd: set PYTHONPATH=%PYTHON_ROOT%
-  - cmd: cd "C:\projects\pytango"
-  - "%PYTHON_ROOT%python.exe setup.py build"
-  - "%PYTHON_ROOT%python.exe setup.py test"
+  - cmd: cd "C:\projects\pytango\dist"
+  - "%PYTHON_ROOT%/Scripts/pip.exe install pytango*.whl"
+    - cmd: cd "C:\projects\pytango"
+  - "%PYTHON_ROOT%python.exe -m pytest tests"
 
 after_test:
   - cmd: cd C:/projects/pytango/dist
