@@ -134,6 +134,7 @@ build_script:
 
 before_test:
   - cmd: cd "C:\projects\pytango"
+  - cmd: dir
   - "%PYTHON_ROOT%/Scripts/pip.exe install -r test_requirements.txt"
 
 test_script:
