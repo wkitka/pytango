@@ -1,5 +1,4 @@
 pytest-runner
-pytest-xdist
 gevent != 1.5a1
 psutil
 trollius ; python_version == '2.7'
