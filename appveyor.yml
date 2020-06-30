@@ -141,7 +141,7 @@ test_script:
   - cmd: set PYTHONPATH=%PYTHON_ROOT%
   - cmd: echo PYTHONPATH is '%PYTHONPATH%'
   - cmd: cd "C:\projects\pytango\dist"
-  - "%PYTHON_ROOT%/Scripts/pip.exe install --find-links=C:/projects/pytango/dist pytango"
+  - "%PYTHON_ROOT%/Scripts/pip.exe install  --no-index --find-links=C:/projects/pytango/dist pytango"
   - cmd: cd "%PYTHON_ROOT%/Scripts"
   - cmd: cd "C:\projects\pytango"
   - "%PYTHON_ROOT%/Scripts/pytest.exe tests"
