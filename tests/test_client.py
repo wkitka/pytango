@@ -20,6 +20,7 @@ from time import sleep
 
 import psutil
 import pytest
+from xprocess import ProcessStarter
 from functools import partial
 from tango import DeviceProxy, DevFailed, GreenMode
 from tango import DeviceInfo, AttributeInfo, AttributeInfoEx
@@ -133,9 +134,9 @@ def get_proxy(host, port, device, green_mode):
     return device_proxy_map[green_mode](access)
 
 
-def wait_for_proxy(host, proc, device, green_mode, retries=400, delay=0.01):
+def wait_for_proxy(host, pid, device, green_mode, retries=400, delay=0.01):
     for i in range(retries):
-        ports = get_ports(proc.pid)
+        ports = get_ports(pid)
         if ports:
             try:
                 proxy = get_proxy(host, ports[0], device, green_mode)
@@ -149,25 +150,46 @@ def wait_for_proxy(host, proc, device, green_mode, retries=400, delay=0.01):
         raise RuntimeError("TangoTest device did not start up!")
 
 
-# Fixtures
+def find_process_id(processName):
+    processes = []
+    for process in psutil.process_iter():
+        try:
+            process_info = find_process_id.as_dict(attrs=['pid', 'name'])
+            if processName.lower() in process_info['name'].lower():
+                processes.append(process_info)
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return processes
 
+
+# Fixtures
 @pytest.fixture(params=[GreenMode.Synchronous,
                         GreenMode.Asyncio,
                         GreenMode.Gevent],
-                scope="module")
-def tango_test(request):
+                scope="session",
+                autouse=True)
+def tango_test(xprocess, request):
+    # python_executable_full_path = sys.executable
+    # python_server_script_full_path = py.path.local(__file__).dirpath("echo_server.py")
     green_mode = request.param
     server = "TangoTest"
     inst = "test"
     device = "sys/tg_test/17"
     host = platform.node()
-    proc = start_server(server, inst, device)
-    proxy = wait_for_proxy(host, proc, device, green_mode)
+    exe = find_executable(server)
+    cmd = ("{0} {1} -ORBendPoint giop:tcp::0 -nodb -dlist {2}"
+           .format(exe, inst, device))
 
+    class Starter(ProcessStarter):
+        pattern = 'Ready to accept request'
+        args = [exe, inst, "-ORBendPoint", "giop:tcp::0", "-nodb", "-dlist", device]
+
+    xprocess.ensure("tango_test", Starter)
+    pid = find_process_id("TangoTest")[0]["pid"]
+    proxy = wait_for_proxy(host, pid, device, green_mode)
     yield proxy
 
-    proc.terminate()
-    # let's not wait for it to exit, that takes too long :)
+    xprocess.getinfo("tango_test").terminate()
 
 
 @pytest.fixture(params=ATTRIBUTES)
