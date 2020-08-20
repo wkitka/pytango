@@ -154,7 +154,7 @@ def find_process_id(processName):
     processes = []
     for process in psutil.process_iter():
         try:
-            process_info = find_process_id.as_dict(attrs=['pid', 'name'])
+            process_info = process.as_dict(attrs=['pid', 'name'])
             if processName.lower() in process_info['name'].lower():
                 processes.append(process_info)
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
